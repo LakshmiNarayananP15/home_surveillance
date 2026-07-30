@@ -1,4 +1,7 @@
 # Ignore personal images in known_faces but keep the folder structure
+#known_faces/*.jpg
+#known_faces/*.jpeg
+#known_faces/*.png
 
 # Ignore log files
 logs/
