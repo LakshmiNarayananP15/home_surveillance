@@ -1,0 +1,6 @@
+opencv-python
+ultralytics
+insightface
+onnxruntime
+numpy
+scikit-learn
