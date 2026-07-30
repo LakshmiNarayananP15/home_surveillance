@@ -63,10 +63,9 @@ def load_known_faces(app):
     return np.array(known_embeddings), known_names
 
 
-# --- UPDATED: Anti-Spoofing Class with 2.7x Bounding Box Expansion ---
+# --- Anti-Spoofing Class with 2.7x Bounding Box Expansion ---
 class AntiSpoofDetector:
     def __init__(self, model_path):
-        # Fallback check in case the file was named MiniFASNetV2.onnx
         if not os.path.exists(model_path):
             alt_path = "MiniFASNetV2.onnx"
             if os.path.exists(alt_path):
@@ -105,7 +104,7 @@ class AntiSpoofDetector:
         # 1. Resize to 80x80 required input size
         face_resized = cv2.resize(cropped, (80, 80))
         
-        # 2. Transpose HWC -> CHW format (No division by 255.0 for raw MiniFASNet ONNX)
+        # 2. Transpose HWC -> CHW format
         face_transposed = np.transpose(face_resized, (2, 0, 1))
         input_data = np.expand_dims(face_transposed, axis=0).astype(np.float32)
         
@@ -159,21 +158,13 @@ def main():
         if not ret:
             break
 
-        # YOLO Human Detection
-        results = yolo_model(frame, classes=[0], verbose=False, conf=0.5)
+        # YOLO Human Detection (runs silently in background)
+        _ = yolo_model(frame, classes=[0], verbose=False, conf=0.5)
         
         # InsightFace Detection
         faces = face_app.get(frame)
 
-        # Draw YOLO human bounding boxes
-        for r in results:
-            boxes = r.boxes
-            for box in boxes:
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
-                cv2.putText(frame, "Human", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-
-        # Process Detected Faces
+        # Process Detected Faces Only
         for face in faces:
             bbox = face.bbox.astype(int)
             
@@ -217,7 +208,7 @@ def main():
                     log_event("MEMBER_DETECTED", name)
                     last_logged[name] = current_time
 
-            # Draw green/orange box for validated live face
+            # Draw green/orange box for validated face only
             cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
             label = f"{name} (Real)"
             cv2.putText(frame, label, (bbox[0], bbox[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
