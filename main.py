@@ -158,6 +158,9 @@ def main():
         if not ret:
             break
 
+        # --- NEW: Flip the frame horizontally to fix the mirror effect ---
+        frame = cv2.flip(frame, 1)
+
         # YOLO Human Detection (runs silently in background)
         _ = yolo_model(frame, classes=[0], verbose=False, conf=0.5)
         
